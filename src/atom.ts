@@ -33,7 +33,7 @@ export interface QtAtom {
     data: QtAtom[] | Buffer
 }
 
-export function parseAtoms(infile: Buffer, depth = 0): QtAtom[] {
+export function parseAtoms(infile: Buffer, depth = 0, shallow=false): QtAtom[] {
     const atoms: QtAtom[] = []
     const cur: Cursor = {
         pos: BigInt(0)
@@ -62,7 +62,7 @@ export function parseAtoms(infile: Buffer, depth = 0): QtAtom[] {
         }
         const endOfAtom = cur.pos + fwd
         const subatoms = Buffer.from(infile.slice(Number(cur.pos), Number(endOfAtom)))
-        const data = hasSubatoms(atomType) && depth < 10 ? parseAtoms(subatoms, depth + 1) : subatoms
+        const data = hasSubatoms(atomType) && depth < 10 && !shallow ? parseAtoms(subatoms, depth + 1) : subatoms
         cur.pos = endOfAtom
         if (depth === 0 && !isQtAtom(atomType)) {
             throw new Error(`Non-QT top-level atom found: ${u32BeToAscii(atomType)}`)
