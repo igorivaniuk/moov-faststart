@@ -9,3 +9,4 @@ test/**/*.js
 test/**/*.js.map
 
 yarn-error.log
+.idea
