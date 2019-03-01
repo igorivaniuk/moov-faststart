@@ -1,2 +1,2 @@
-export { default as faststart } from './qt-faststart'
+export { default as faststart, supportStreaming } from './qt-faststart'
 export * from './options'
