@@ -1,4 +1,3 @@
-/// <reference path="../src/types/bigint.d.ts" />
 // tslint:disable no-unused-expression
 
 import * as fs from 'fs'
