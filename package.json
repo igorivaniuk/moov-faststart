@@ -5,8 +5,8 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "scripts": {
-    "clean:test": "find ./test -name '*.js' -o -name '*.js.map' -exec rm {} \\;",
-    "clean:src": "find ./src -name '*.js' -o -name '*.js.map' -exec rm {} \\;",
+    "clean:test": "find ./test -name '*.js*' -exec rm {} \\;",
+    "clean:src": "find ./src -name '*.js*' -exec rm {} \\;",
     "clean": "npm run clean:src && npm run clean:test",
     "prebuild": "npm run clean",
     "build": "tsc -p tsconfig.json",
