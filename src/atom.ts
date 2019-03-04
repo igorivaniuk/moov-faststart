@@ -21,13 +21,19 @@ export const CO64_ATOM = asciiToU32Be('co64')
 export const ATOM_PREAMBLE_SIZE = BigInt(8)
 export const MAX_FTYP_ATOM_SIZE = BigInt(1048576)
 
+export enum SizeKind {
+    U32,
+    U64,
+}
+
 export interface QtAtom {
     kind: string
     size: BigInt
+    sizeKind: SizeKind
     data: QtAtom[] | Buffer
 }
 
-export function parseAtoms(infile: Buffer, depth = 0): QtAtom[] {
+export function parseAtoms(infile: Buffer, depth = 0, shallow=false): QtAtom[] {
     const atoms: QtAtom[] = []
     const cur: Cursor = {
         pos: BigInt(0)
@@ -39,22 +45,24 @@ export function parseAtoms(infile: Buffer, depth = 0): QtAtom[] {
             break
         }
 
-        let fwd: BigInt // forward-seek counter
+        let fwd: bigint // forward-seek counter
         let atomSize = BigInt(readU32(cur, infile))
         const atomType = readU32(cur, infile)
-        if (Number(atomSize) === 1) {
+        let sizeKind = SizeKind.U32;
+        if (atomSize === BigInt(1)) {
             // 64-bit atom size
             atomSize = readU64(cur, infile)
             if (atomSize > BigInt(Number.MAX_SAFE_INTEGER)) {
                 throw new Error(`"${atomType}" atom size is larger than MAX_SAFE_INTEGER!`)
             }
             fwd = atomSize - ATOM_PREAMBLE_SIZE * BigInt(2)
+            sizeKind = SizeKind.U64;
         } else {
             fwd = atomSize - ATOM_PREAMBLE_SIZE
         }
         const endOfAtom = cur.pos + fwd
         const subatoms = Buffer.from(infile.slice(Number(cur.pos), Number(endOfAtom)))
-        const data = hasSubatoms(atomType) && depth < 10 ? parseAtoms(subatoms, depth + 1) : subatoms
+        const data = hasSubatoms(atomType) && depth < 10 && !shallow ? parseAtoms(subatoms, depth + 1) : subatoms
         cur.pos = endOfAtom
         if (depth === 0 && !isQtAtom(atomType)) {
             throw new Error(`Non-QT top-level atom found: ${u32BeToAscii(atomType)}`)
@@ -62,6 +70,7 @@ export function parseAtoms(infile: Buffer, depth = 0): QtAtom[] {
         atoms.push({
             kind: u32BeToAscii(atomType),
             size: atomSize,
+            sizeKind,
             data
         })
     }
@@ -76,16 +85,16 @@ export function recurseFlattenAtoms(atoms: QtAtom[], depth = 0): Buffer {
             atom.data = recurseFlattenAtoms(atom.data, depth + 1)
         }
 
-        const u64Size = Number(ATOM_PREAMBLE_SIZE) + atom.data.byteLength > 2 ** 32 - 1
+        // const u64Size = Number(ATOM_PREAMBLE_SIZE) + atom.data.byteLength > 2 ** 32 - 1
         let header
-        if (u64Size) {
+        if (atom.sizeKind === SizeKind.U64) {
             const u64Preamble = Number(ATOM_PREAMBLE_SIZE) * 2
             header = Buffer.alloc(u64Preamble)
             header.writeUInt32BE(1, 0)
             header.writeUInt32BE(asciiToU32Be(atom.kind), 4)
-            const newSize = u64Preamble + atom.data.byteLength
-            header.writeUInt32BE((newSize >> 32) & 0xffffffff, 8)
-            header.writeUInt32BE(newSize & 0xffffffff, 12)
+            const newSize = BigInt(u64Preamble + atom.data.byteLength)
+            header.writeUInt32BE(Number((newSize >> BigInt(32)) & BigInt(0xffffffff)), 8)
+            header.writeUInt32BE(Number(newSize & BigInt(0xffffffff)), 12)
         } else {
             header = Buffer.alloc(Number(ATOM_PREAMBLE_SIZE))
             const newSize = Number(ATOM_PREAMBLE_SIZE) + atom.data.byteLength

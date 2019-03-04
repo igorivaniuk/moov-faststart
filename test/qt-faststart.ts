@@ -1,4 +1,3 @@
-/// <reference path="../src/types/bigint.d.ts" />
 // tslint:disable no-unused-expression
 
 import * as fs from 'fs'
@@ -261,6 +260,57 @@ describe('qt-faststart', () => {
     it('should match snapshot', () => {
         const faststarted = faststart(infile)
         const snapshot = fs.readFileSync(path.resolve(__dirname, 'h264/bbb_faststarted.snapshot.mp4'))
+        const cmp = Buffer.compare(faststarted, snapshot)
+        expect(cmp).to.equal(0)
+    })
+})
+
+describe('Do not change size', () => {
+    const infile = fs.readFileSync(path.resolve(__dirname, 'h264/video3-original.mp4'));
+
+    it('should parse top-level atoms', () => {
+        const atoms = parseAtoms(infile)
+        // console.log(atoms)
+        expect(withoutData(atoms)).to.deep.equal([
+            {
+                kind: 'ftyp',
+                size: BigInt(28)
+            },
+            {
+                kind: 'mdat',
+                size: BigInt(16911400)
+            },
+            {
+                kind: 'moov',
+                size: BigInt(61433)
+            }
+        ])
+    })
+
+    it('should produce valid qt/mp4 file (end-to-end)', () => {
+        const faststarted = faststart(infile)
+        const atoms = parseAtoms(faststarted)
+        // console.log(atoms)
+        expect(withoutData(atoms)).to.deep.equal([
+            {
+                kind: 'ftyp',
+                size: BigInt(28)
+            },
+            {
+                kind: 'moov',
+                size: BigInt(61433)
+            },
+            {
+                kind: 'mdat',
+                size: BigInt(16911400)
+            }
+        ])
+    })
+
+    it('should match snapshot', () => {
+        const faststarted = faststart(infile)
+        const snapshot = fs.readFileSync(path.resolve(__dirname, 'h264/video3.snaphot.mp4'))
+        //fs.writeFileSync(path.resolve(__dirname, 'h264/video3.snaphot-up13.mp4'), faststarted)
         const cmp = Buffer.compare(faststarted, snapshot)
         expect(cmp).to.equal(0)
     })

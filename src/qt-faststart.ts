@@ -2,6 +2,18 @@ import { parseAtoms, recurseFlattenAtoms, QtAtom, MAX_FTYP_ATOM_SIZE } from './a
 import { FaststartOptions } from './options'
 import updateChunkOffsets from './update-chunk-offsets'
 
+export function supportStreaming(infile: Buffer) {
+    const file = Buffer.from(infile)
+    const atoms = parseAtoms(file, 0, true)
+    const mdatIndex = atoms.findIndex(atom => atom.kind === 'mdat')
+    const moovIndex = atoms.findIndex(atom => atom.kind === 'moov')
+    if (moovIndex === -1 || mdatIndex === -1) {
+        return false
+    }
+
+    return moovIndex < mdatIndex
+}
+
 /**
  * Enables "faststart" for QuickTime files so that they can be streamed.
  *
