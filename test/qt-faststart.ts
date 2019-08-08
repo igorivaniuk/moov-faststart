@@ -3,7 +3,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { expect } from 'chai'
-import faststart, { sortFaststartAtoms } from '../src/qt-faststart'
+import faststart, { sortFaststartAtoms, supportStreaming } from '../src/qt-faststart'
 import { QtAtom, parseAtoms, traverseAtoms } from '../src/atom'
 
 describe('qt-faststart', () => {
@@ -315,6 +315,17 @@ describe('Do not change size', () => {
         expect(cmp).to.equal(0)
     })
 })
+
+// describe('Top atoms', () => {
+//     const infile = fs.readFileSync(path.resolve(__dirname, 'h264/top-level-sidx.original.mp4'));
+//     const in1file = fs.readFileSync(path.resolve(__dirname, 'h264/c2f33b03-b909-4849-a899-ac497ab27bad.mp4'));
+//     it('should parse', function() {
+//         expect(supportStreaming(infile)).eq(true)
+//         const faststarted = faststart(in1file)
+//         fs.writeFileSync(path.resolve(__dirname, 'h264/c2f33b03-b909-4849-a899-ac497ab27bad-processed.mp4'), faststarted)
+//         // expect(supportStreaming(in1file)).eq(true)
+//     });
+// })
 
 function withoutData(atoms: QtAtom[]) {
     return atoms.map(({ kind, size }) => ({ kind, size }))

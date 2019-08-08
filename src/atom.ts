@@ -1,6 +1,8 @@
 import { asciiToU32Be, readU32, readU64, u32BeToAscii, Cursor } from './util'
 
 export const FREE_ATOM = asciiToU32Be('free')
+export const SIDX_ATOM = asciiToU32Be('sidx')
+export const MOOF_ATOM = asciiToU32Be('moof')
 export const JUNK_ATOM = asciiToU32Be('junk')
 export const MDAT_ATOM = asciiToU32Be('mdat')
 export const MOOV_ATOM = asciiToU32Be('moov')
@@ -120,6 +122,8 @@ export function traverseAtoms(atoms: QtAtom[], callback: (atom: QtAtom) => void)
 export function isQtAtom(atomType: number) {
     return [
         FREE_ATOM,
+        SIDX_ATOM,
+        MOOF_ATOM,
         JUNK_ATOM,
         MDAT_ATOM,
         MOOV_ATOM,
@@ -135,7 +139,7 @@ export function isQtAtom(atomType: number) {
         MINF_ATOM,
         STBL_ATOM,
         STCO_ATOM,
-        CO64_ATOM
+        CO64_ATOM,
     ].includes(atomType)
 }
 
