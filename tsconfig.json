@@ -5,7 +5,7 @@
     "lib": ["es2017", "esnext"],
     "sourceMap": true,
     "moduleResolution": "node",
-    "rootDir": "src",
+    "rootDir": ".",
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -13,6 +13,7 @@
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": false,
+    "declaration": true,
     "typeRoots": [
       "node_modules/@types",
       "src/types"

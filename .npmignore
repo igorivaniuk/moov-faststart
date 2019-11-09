@@ -1,1 +1,7 @@
 test/**/*
+.idea
+tsconfig.json
+.vscode
+.prettierrc.json
+tslint.json
+.travis.yml
